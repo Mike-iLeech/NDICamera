@@ -1,4 +1,5 @@
 INSTRUMENTATION_RESULT: checks=Camera2 preview READY
+producer transforms: no double rotation, uniform pixel scale, GL readback flip, 4 rotations
 MUTE -> START -> UNMUTE opens AudioRecord
 NDI START/STOP and audio teardown
 lazy microphone creation after initially silent session
@@ -6,9 +7,11 @@ HIDE/restore/grid/scopes
 hold + swipe locks AE/AF and changes EV
 two-pointer pinch zoom
 front camera + screen flash
-landscape controls do not overlap
-portrait controls do not overlap
+landscape: controls and rotated slider inside cutout/navigation safe bounds
+portrait: MUTE/audio in bounds with navigation inset, header at 50 px
 PIP capability fallback
+fixed output ID 0 selected and zoomed without rerouting
+device exposes no selectable hidden physical rear output
 
 INSTRUMENTATION_RESULT: verdict=PASS
 INSTRUMENTATION_CODE: -1

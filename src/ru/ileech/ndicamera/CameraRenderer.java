@@ -2,6 +2,7 @@ package ru.ileech.ndicamera;
 
 import android.content.Context;
 import android.graphics.SurfaceTexture;
+import android.graphics.RectF;
 import android.opengl.*;
 import android.view.Surface;
 import java.nio.*;
@@ -18,6 +19,8 @@ final class CameraRenderer implements GLSurfaceView.Renderer {
  private final FloatBuffer uv=ByteBuffer.allocateDirect(32).order(ByteOrder.nativeOrder()).asFloatBuffer();
  private int program,position,texcoord,sampler,matrix,surfaceWidth,surfaceHeight,fbo,color,outputWidth,outputHeight;private ByteBuffer pixels;private long nextFrame,lastScope;
  volatile StreamSession stream;volatile boolean scopes;volatile int displayRotation;private int glError;
+ volatile RectF pipBounds=new RectF(.04f,.65f,.28f,.88f);private volatile float[] focusTransform;
+ float[] focusPoint(float x,float y){float[] m=focusTransform;return m==null?new float[]{x,y}:PreviewTransform.point(m,x,y);}
  CameraRenderer(GLSurfaceView view,CameraController camera,Frames listener){this.view=view;this.camera=camera;this.listener=listener;vertices.put(new float[]{-1,-1,1,-1,-1,1,1,1}).position(0);uv.put(new float[]{0,0,1,0,0,1,1,1}).position(0);}
  private int shader(int type,String source){int s=GLES20.glCreateShader(type);GLES20.glShaderSource(s,source);GLES20.glCompileShader(s);int[] ok=new int[1];GLES20.glGetShaderiv(s,GLES20.GL_COMPILE_STATUS,ok,0);if(ok[0]==0)throw new IllegalStateException(GLES20.glGetShaderInfoLog(s));return s;}
  @Override public void onSurfaceCreated(GL10 gl,EGLConfig config){
@@ -29,16 +32,15 @@ final class CameraRenderer implements GLSurfaceView.Renderer {
   fbo=0;color=0;outputWidth=0;outputHeight=0;camera.attach(inputs[0],inputs[1]);
  }
  @Override public void onSurfaceChanged(GL10 gl,int w,int h){surfaceWidth=w;surfaceHeight=h;}
- private int rotation(int index,boolean front){android.hardware.camera2.CameraCharacteristics info=index==1?camera.secondaryInfo:camera.active.info;Integer sensor=info==null?null:info.get(android.hardware.camera2.CameraCharacteristics.SENSOR_ORIENTATION);int d=displayRotation*90;return ((sensor==null?90:sensor)+(front?d:-d)+360)%360;}
  private void draw(int index,int x,int y,int w,int h,boolean flip,boolean front){
-  if(!valid[index])return;GLES20.glViewport(x,y,w,h);float[] orient=new float[16],combined=new float[16];Matrix.setIdentityM(orient,0);Matrix.translateM(orient,0,.5f,.5f,0);if(front)Matrix.scaleM(orient,0,-1,1,1);Matrix.rotateM(orient,0,rotation(index,front),0,0,1);
-  int sourceW=index==0?camera.width:camera.secondaryWidth,sourceH=index==0?camera.height:camera.secondaryHeight;float frameRatio=(rotation(index,front)%180==0)?sourceW/(float)sourceH:sourceH/(float)sourceW;float target=w/(float)h;if(target>frameRatio)Matrix.scaleM(orient,0,1,frameRatio/target,1);else Matrix.scaleM(orient,0,target/frameRatio,1,1);
-  if(flip)Matrix.scaleM(orient,0,1,-1,1);Matrix.translateM(orient,0,-.5f,-.5f,0);Matrix.multiplyMM(combined,0,transforms[index],0,orient,0);
+  if(!valid[index]||w<=0||h<=0)return;GLES20.glViewport(x,y,w,h);
+  int sourceW=index==0?camera.width:camera.secondaryWidth,sourceH=index==0?camera.height:camera.secondaryHeight;float digital=index==0&&camera.active.physical!=null?camera.zoom:1;
+  float[] combined=PreviewTransform.matrix(transforms[index],sourceW,sourceH,displayRotation,w,h,flip,digital);if(index==0&&!flip)focusTransform=combined;
   GLES20.glUseProgram(program);GLES20.glActiveTexture(GLES20.GL_TEXTURE0);GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES,texture[index]);GLES20.glUniform1i(sampler,0);GLES20.glUniformMatrix4fv(matrix,1,false,combined,0);vertices.position(0);uv.position(0);GLES20.glVertexAttribPointer(position,2,GLES20.GL_FLOAT,false,0,vertices);GLES20.glVertexAttribPointer(texcoord,2,GLES20.GL_FLOAT,false,0,uv);GLES20.glEnableVertexAttribArray(position);GLES20.glEnableVertexAttribArray(texcoord);GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP,0,4);
  }
  private void composite(int w,int h,boolean output){
   GLES20.glClearColor(0,0,0,1);GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);draw(0,0,0,w,h,output,camera.mainFront);
-  if(camera.pip){float scale=w/(float)Math.max(1,surfaceWidth);int pw=(int)(Math.min(surfaceWidth*.24f,100*view.getResources().getDisplayMetrics().density)*scale),ph=(int)(pw*1.4f),left=(int)(25*view.getResources().getDisplayMetrics().density*scale),bottom=(int)(78*view.getResources().getDisplayMetrics().density*scale);if(bottom+ph>h)bottom=Math.max(0,h-ph-8);if(output)bottom=h-bottom-ph;draw(1,left,bottom,pw,ph,output,!camera.mainFront);}
+  if(camera.pip){RectF bounds=pipBounds;int left=Math.round(bounds.left*w),top=Math.round(bounds.top*h),pw=Math.round(bounds.width()*w),ph=Math.round(bounds.height()*h);draw(1,left,output?top:h-top-ph,pw,ph,output,!camera.mainFront);}
  }
  private boolean target(int w,int h){
   if(w==outputWidth&&h==outputHeight&&pixels!=null)return true;

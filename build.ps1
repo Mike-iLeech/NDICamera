@@ -37,7 +37,9 @@ if(!(Test-Path $key)){
  & "$env:JAVA_HOME\bin\keytool.exe" -genkeypair -keystore $key -storepass:env NDICAMERA_BUILD_PASSWORD -keypass:env NDICAMERA_BUILD_PASSWORD -alias $alias -keyalg RSA -keysize 3072 -validity 10000 -dname 'CN=NDI Camera, OU=Personal, O=iLeech, C=RU'; Check
 }
 $suffix=if($DebugSigning){'-debug'}else{''}
-$apk="dist\NDICamera-0.1.0$suffix.apk"
+[xml]$appManifest=Get-Content AndroidManifest.xml
+$version=$appManifest.manifest.GetAttribute('versionName','http://schemas.android.com/apk/res/android')
+$apk="dist\NDICamera-$version$suffix.apk"
 & "$bt\apksigner.bat" sign --ks $key --ks-key-alias $alias --ks-pass env:NDICAMERA_BUILD_PASSWORD --out $apk build\aligned.apk; Check
 & "$bt\apksigner.bat" verify --verbose $apk; Check
 & "$bt\zipalign.exe" -c -P 16 4 $apk; Check
