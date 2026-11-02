@@ -19,3 +19,4 @@ $adb="$sdk\platform-tools\adb.exe"
 & $adb -s $Device shell am instrument -w ru.ileech.ndicamera.test/ru.ileech.ndicamera.SmokeInstrumentation | Tee-Object verification\smoke-result.txt
 Check
 if(!(Select-String -LiteralPath verification\smoke-result.txt -Pattern 'verdict=PASS' -Quiet)){throw 'Integration test did not pass'}
+foreach($name in @('portrait','landscape')){& $adb -s $Device pull "/sdcard/Android/data/ru.ileech.ndicamera/files/$name.png" "verification/$name.png"; Check}
