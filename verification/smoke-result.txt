@@ -10,8 +10,7 @@ front camera + screen flash
 landscape: controls and rotated slider inside cutout/navigation safe bounds
 portrait: MUTE/audio in bounds with navigation inset, header at 50 px
 PIP capability fallback
-fixed output ID 0 selected and zoomed without rerouting
-device exposes no selectable hidden physical rear output
+automatic camera only; lens selector absent; centered 50px toolbar and 50px settings/camera gap
 
 INSTRUMENTATION_RESULT: verdict=PASS
 INSTRUMENTATION_CODE: -1
