@@ -1,0 +1,14 @@
+INSTRUMENTATION_RESULT: checks=Camera2 preview READY
+MUTE -> START -> UNMUTE opens AudioRecord
+NDI START/STOP and audio teardown
+lazy microphone creation after initially silent session
+HIDE/restore/grid/scopes
+hold + swipe locks AE/AF and changes EV
+two-pointer pinch zoom
+front camera + screen flash
+landscape controls do not overlap
+portrait controls do not overlap
+PIP capability fallback
+
+INSTRUMENTATION_RESULT: verdict=PASS
+INSTRUMENTATION_CODE: -1
