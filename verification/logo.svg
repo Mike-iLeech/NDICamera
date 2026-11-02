@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="432" height="432" viewBox="0 0 108 108" role="img" aria-label="NDI Camera">
+ <rect width="108" height="108" fill="#101e20"/>
+ <circle cx="54" cy="54" r="37" fill="#18392b" stroke="#4ade80" stroke-width="3"/>
+ <path d="M34 40h7l5-7h16l5 7h7q5 0 5 5v22q0 5-5 5H34q-5 0-5-5V45q0-5 5-5z" fill="#18392b" stroke="#d7ffe5" stroke-width="3" stroke-linejoin="round"/>
+ <circle cx="54" cy="56" r="11" fill="#101e20" stroke="#4ade80" stroke-width="3"/>
+ <circle cx="72" cy="47" r="2" fill="#d7ffe5"/>
+</svg>

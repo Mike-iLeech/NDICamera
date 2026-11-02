@@ -1,0 +1,5 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="ru.ileech.ndicamera.test">
+ <uses-sdk android:minSdkVersion="29" android:targetSdkVersion="35"/>
+ <application android:label="NDI Camera integration tests"/>
+ <instrumentation android:name="ru.ileech.ndicamera.SmokeInstrumentation" android:targetPackage="ru.ileech.ndicamera"/>
+</manifest>
